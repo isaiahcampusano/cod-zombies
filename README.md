@@ -1,5 +1,8 @@
 # cod-zombies
 cod zombies clone (building w first principles)
+
+** can i recreate a systematic breakdown of a game and optimize the path toward the alpha/beta release
+
 # Smallest Buildable Version Exercise
 
 ## Purpose
