@@ -3,221 +3,130 @@ cod zombies clone (building w first principles)
 
 ** can i recreate a systematic breakdown of a game and optimize the path toward the alpha/beta release
 
-# Smallest Buildable Version Exercise
+Yes—you can absolutely recreate a systematic breakdown, and the exercise you shared is already a strong foundation. Big studios like Treyarch and Rockstar don’t build an entire game in one giant step. They find the smallest **proven interaction**, polish it, and then layer on systems one at a time. This is how “Zombies” itself started as a tiny experiment inside Treyarch before becoming a flagship mode.
 
-## Purpose
-
-The goal is not to build the entire game at once.
-
-The goal is to identify the smallest interaction that proves the core idea works, build it, understand it, and then add one dependency at a time.
+Here’s how to use your exercise to build a COD Zombies clone in optimal, AI‑friendly bites.
 
 ---
 
-## Step 1: Describe the core experience
+### How big studios actually do this
+- **Vertical Slice First** – A single, playable loop that proves the core mechanic is fun. At Treyarch, the original Zombies mode was prototyped with one room, one zombie, one weapon.
+- **Feature‑Locked Milestones** – They define exactly what must work for Alpha (all core systems playable) and Beta (content complete, balance/polish), and no new features creep in.
+- **Dependency‑Ordered Roadmap** – Rockstar’s production works like a tree: they implement the character controller, then weapons, then AI perception, then AI combat … each built on the previous, never jumping ahead to “missions” before shooting works.
+- **Iterative Tuning** – Playtest the tiniest piece, tweak numbers, then move on. The goal is to prove the loop before you build the world.
 
-Complete this sentence:
-
-> The player should be able to __________.
-
-Examples:
-
-* The player should be able to survive while a zombie moves toward them.
-* The player should be able to place a unit that moves toward an enemy tower.
-
-Do not include menus, progression systems, cosmetics, multiplayer, maps, or extra features yet.
+Your exercise mirrors this perfectly. The “Not Yet” list is your feature‑lock; the dependency chain is your roadmap.
 
 ---
 
-## Step 2: Remove the theme
+## Filled‑out exercise for a COD Zombies clone
 
-Replace all recognizable characters, artwork, animations, and environments with basic shapes.
+### Step 1 – Core experience
+*The player should be able to shoot a moving enemy before it reaches and damages them.*
 
-Examples:
+### Step 2 – Remove the theme
+- Player = a capsule with a camera  
+- Zombie = a red cube  
+- Bullet = a small yellow sphere  
+- Room = a grey floor with four invisible walls  
+- Weapon = nothing visible, just the action of spawning a bullet forward
 
-* Player = square
-* Zombie = second square
-* Clash Royale unit = circle
-* Tower = rectangle
-* Bullet = small dot
-* Arena = empty box
+### Step 3 – Required objects and absolute minimum data/actions
 
-The first version should still function even if it looks ugly.
+**Player**  
+- What is it? The character the user controls.  
+- Information needed: position (Vector3), rotation, health (float).  
+- Actions: move (WASD + ground collision), look (mouse), shoot (spawn bullet forward), take damage (subtract health).
 
----
+**Zombie**  
+- What is it? A basic enemy that moves toward the player.  
+- Information needed: own position, player position reference, health.  
+- Actions: move toward player every frame, when close enough → deal damage to player and destroy self (or push back), take damage (subtract health, if ≤ 0 → destroy).
 
-## Step 3: List what must exist
+**Bullet**  
+- What is it? A projectile that moves in a straight line.  
+- Information needed: spawn position, direction, speed, damage value, lifetime.  
+- Actions: move forward each frame, check collision with zombie → apply damage and destroy bullet, destroy self after lifetime.
 
-Ask:
+**Game Session (manager)**  
+- What is it? An invisible controller that handles spawns, win/loss state.  
+- Information needed: player reference, list of active zombies, player health.  
+- Actions: spawn one zombie at a fixed point, detect game over when player health ≤ 0, restart scenario.
 
-> What objects must exist for the core interaction to happen?
+### Step 4 – Break down every unclear word
 
-For each object, write only what it absolutely needs to do.
+“Player shoots”  
+- On left‑click, instantiate a bullet at the player’s camera position, facing the camera’s forward direction.  
+- Set its velocity to direction * speed.  
+- Bullet moves via `transform.Translate(forward * speed * Time.deltaTime)`.
 
-### Object
+“Zombie tracks the player”  
+- Every frame: get player position, get zombie position.  
+- Calculate direction = (player.position – zombie.position).normalized.  
+- Move zombie by direction * moveSpeed * Time.deltaTime (keep Y locked).  
+- Optionally rotate to face the player.
 
-**What is it?**
+“Zombie damages player”  
+- When distance between zombie and player ≤ attackRange (e.g., 1.5 units), reduce player health by damagePerSecond * Time.deltaTime (or an instant chunk).  
+- Destroy zombie after a successful hit (simplest version) to avoid constant damage.
 
-**What information does it need?**
+“Bullet hits zombie”  
+- In bullet’s update, check for overlap with any zombie collider (sphere cast or OnTriggerEnter).  
+- If hit: zombie.health -= bullet.damage; Destroy(bullet).  
+- If zombie.health ≤ 0, Destroy(zombie).
 
-**What action can it perform?**
+### Step 5 – Smallest test
+*I will know the first version works when:*  
+I can move around an empty room with WASD, look with the mouse, left‑click to fire a yellow sphere that destroys a red cube, and if the red cube touches me my on‑screen health number decreases; when health reaches zero the game shows “Game Over” and restarts.
 
-Example:
+### Step 6 – Not Yet (explicitly excluded)
+- Round‑based spawning (only one zombie for now)  
+- Multiple zombie types  
+- Points / currency  
+- Wall weapons / Mystery Box  
+- Perks  
+- Doors / room unlocking  
+- Ammo limits  
+- Reloading  
+- Headshot zones  
+- Particle effects, sounds, animations  
+- Menus, HUD beyond health and game‑over text  
+- Multiplayer
 
-### Zombie
+### Step 7 – Vertical slice implementation steps
+1. Create an empty 3D scene with a floor plane and invisible boundary walls.  
+2. Add a capsule with a camera, movement (WASD + gravity), and mouse look.  
+3. Add a red cube zombie that spawns at a fixed point (e.g., 10 meters away).  
+4. Give the zombie a script to move towards the player.  
+5. Give the player a Shoot() function that instantiates a small yellow sphere moving forward.  
+6. Add collision between bullet and zombie (use triggers) → destroy both or reduce zombie health.  
+7. Detect zombie‑player proximity → damage player (simple health decrement).  
+8. Display health as text, show “Game Over” and freeze when health ≤ 0.  
+9. On game over, reload the scene after a key press.
 
-**What is it?**
-A basic object representing an enemy.
+### Step 8 – Reflection (example after building)
+*What did I learn?*  
+Collision and simple movement are straightforward; the fun comes from the tension of slow zombies closing in while you aim.
 
-**What information does it need?**
-Its position and the player’s position.
+*What still feels unclear?*  
+How to structure spawning waves efficiently without coupling everything.
 
-**What action can it perform?**
-Move a small distance toward the player.
-
----
-
-## Step 4: Break down every unclear word
-
-Take each action and ask:
-
-> What does that mean mechanically?
-
-Continue until the action can be described as something the computer can calculate or change.
-
-Example:
-
-**The zombie tracks the player.**
-
-What does “tracks” mean?
-
-* Read the player’s position.
-* Compare it with the zombie’s position.
-* Determine the direction toward the player.
-* Move the zombie a small distance in that direction.
-* Repeat every frame.
-
-Nothing should remain magical or unexplained.
-
----
-
-## Step 5: Define the smallest test
-
-Complete this sentence:
-
-> I will know the first version works when __________.
-
-The test should describe one visible result.
-
-Examples:
-
-* I can move around an empty room while one square continuously moves toward me.
-* I can place one unit, and it automatically walks toward one tower.
-* A moving object can cross a player-built beam without falling.
-
----
-
-## Step 6: Explicitly exclude features
-
-Write a **Not Yet** list.
-
-This prevents the project from expanding before the core interaction works.
-
-### Not Yet
-
-* Menus
-* Character models
-* Detailed environments
-* Multiplayer
-* Progression systems
-* Multiple enemy types
-* Sound effects
-* Cosmetics
-* Accounts
-* Shops
-* Deck building
-* Round systems
-* Advanced artificial intelligence
-
-These are not rejected ideas. They are postponed dependencies.
+*Next dependency* (only one)  
+**Add a basic round system:** after destroying one zombie, spawn two after a short delay; each round increases count. This teaches sequencing and state management without yet adding points or doors.
 
 ---
 
-## Step 7: Build one vertical slice
+## How this helps with an AI code assistant
+When you give an AI a “whole entree,” it guesses. But when you feed it **one bite**, it’s far more likely to produce working, testable code. For example:
 
-A vertical slice is one tiny interaction that works from beginning to end.
+**Prompt to AI after Step 3:**  
+*“In Unity, create a simple first‑person controller on a capsule with WASD movement and mouse look. Do not add jumping. Use a Rigidbody for movement and lock rotation. Show only the C# script and required component setup.”*
 
-It does not need to be polished.
+Then you test that. Next prompt:  
+*“Add a cube enemy that moves toward the player at a speed of 2. The enemy should have a script with a public Transform playerTarget. In Update, use Vector3.MoveTowards on its position, ignoring Y differences.”*
 
-It only needs to prove the project’s central behavior.
-
-### Zombies vertical slice
-
-1. Create an empty room.
-2. Represent the player with a basic object or camera.
-3. Represent one zombie with a basic shape.
-4. Store both positions.
-5. Make the zombie move toward the player.
-6. Allow the player to move away.
-7. Decide what happens when the zombie reaches the player.
-
-### Clash Royale vertical slice
-
-1. Create an empty arena.
-2. Place one friendly unit.
-3. Place one enemy tower.
-4. Store their positions.
-5. Make the unit identify the tower as its target.
-6. Make the unit move toward the tower.
-7. Stop the unit when it reaches attack range.
-8. Reduce the tower’s health over time.
-9. Remove or disable the tower when its health reaches zero.
+By building one object, one interaction, one test at a time, you stay in control and the AI produces exactly what you need without getting lost in undefined mechanics.
 
 ---
 
-## Step 8: Reflect before expanding
-
-After the smallest version works, answer:
-
-* What did I learn?
-* What part do I understand clearly now?
-* What still feels magical or unclear?
-* What failed?
-* What is the next required dependency?
-* What feature would add the most learning value?
-* Am I adding this feature because it is necessary or because it sounds exciting?
-
-Only choose one next dependency.
-
----
-
-# Current Smallest Version
-
-## Core experience
-
-The player should be able to:
-
-> [Write one interaction.]
-
-## Required objects
-
-* [Object one]
-* [Object two]
-* [Object three]
-
-## Smallest test
-
-I will know this works when:
-
-> [Write one observable result.]
-
-## Not Yet
-
-* [Excluded feature]
-* [Excluded feature]
-* [Excluded feature]
-
-## Next dependency
-
-After the smallest version works, I will add:
-
-> [Only one next system.]
+The exercise you have is the “system” you asked about. Studios like Treyarch and Rockstar don’t use a magic blueprint—they use this exact mindset, scaled up. Start with the filled template above, implement the vertical slice, and only then decide the one next feature that teaches you the most. You’ll have a playable game far sooner, and your collaboration with any AI tool will be drastically more productive.
