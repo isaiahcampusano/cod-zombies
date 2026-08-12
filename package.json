@@ -1,0 +1,10 @@
+{
+  "name": "cod-zombies",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Headless game logic for a player and pursuing zombie",
+  "scripts": {
+    "start": "node game/main.js",
+    "test": "node --test"
+  }
+}
