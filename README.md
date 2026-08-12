@@ -1,7 +1,8 @@
 # cod-zombies
 
-Milestone 1 implements a dependency-free, headless game-logic layer for a
-player moving through a sandbox while a zombie pursues it.
+Milestone 2 adds a dependency-free browser rendering layer to the headless
+game logic. Move the player while the zombie pursues it; the zombie changes
+appearance when it makes contact.
 
 ## Run
 
@@ -11,8 +12,14 @@ Requires Node.js 18 or newer.
 npm start
 ```
 
-The demo simulates player input and logs both entities' state each frame. No
-rendering or canvas code is included.
+The headless demo simulates player input and logs both entities' state each
+frame.
+
+## Run in a browser
+
+Open `web/index.html` in a browser. No build step or local server is required.
+
+Use WASD or the arrow keys to move the player.
 
 ## Test
 
