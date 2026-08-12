@@ -1,5 +1,6 @@
 "use strict";
 
+(function initializeVector(globalObject) {
 function subtract(a, b) {
   return { x: a.x - b.x, y: a.y - b.y };
 }
@@ -21,4 +22,12 @@ function normalize(vector) {
   };
 }
 
-module.exports = { subtract, length, normalize };
+const vectorApi = { subtract, length, normalize };
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = vectorApi;
+} else {
+  globalObject.CODZ = globalObject.CODZ || {};
+  globalObject.CODZ.Vector = vectorApi;
+}
+}(typeof window !== "undefined" ? window : globalThis));

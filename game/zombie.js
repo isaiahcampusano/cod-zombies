@@ -1,6 +1,9 @@
 "use strict";
 
-const { normalize, subtract } = require("./vector");
+(function initializeZombie(globalObject) {
+const { normalize, subtract } = typeof require === "function"
+  ? require("./vector")
+  : globalObject.CODZ.Vector;
 
 class Zombie {
   constructor({ player, position = { x: 0, y: 0 }, speed = 100, size = 10 } = {}) {
@@ -36,4 +39,10 @@ function validateDeltaTime(deltaTime) {
   }
 }
 
-module.exports = { Zombie };
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { Zombie };
+} else {
+  globalObject.CODZ = globalObject.CODZ || {};
+  globalObject.CODZ.Zombie = Zombie;
+}
+}(typeof window !== "undefined" ? window : globalThis));

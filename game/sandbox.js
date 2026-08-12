@@ -1,6 +1,9 @@
 "use strict";
 
-const { length, subtract } = require("./vector");
+(function initializeSandbox(globalObject) {
+const { length, subtract } = typeof require === "function"
+  ? require("./vector")
+  : globalObject.CODZ.Vector;
 
 class Sandbox {
   constructor({ width = 800, height = 600, player, zombie, onContact } = {}) {
@@ -88,4 +91,10 @@ class Sandbox {
   }
 }
 
-module.exports = { Sandbox };
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { Sandbox };
+} else {
+  globalObject.CODZ = globalObject.CODZ || {};
+  globalObject.CODZ.Sandbox = Sandbox;
+}
+}(typeof window !== "undefined" ? window : globalThis));

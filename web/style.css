@@ -1,0 +1,36 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  background: #101614;
+  color: #e7eee9;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+}
+
+main {
+  width: min(92vw, 800px);
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 0.25rem;
+}
+
+p {
+  margin-top: 0;
+  color: #aebbb3;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #17201c;
+  border: 1px solid #506258;
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 35%);
+}

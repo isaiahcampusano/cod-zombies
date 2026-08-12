@@ -1,6 +1,9 @@
 "use strict";
 
-const { normalize } = require("./vector");
+(function initializePlayer(globalObject) {
+const { normalize } = typeof require === "function"
+  ? require("./vector")
+  : globalObject.CODZ.Vector;
 
 class Player {
   constructor({ position = { x: 0, y: 0 }, speed = 200, size = 10 } = {}) {
@@ -31,4 +34,10 @@ function validateDeltaTime(deltaTime) {
   }
 }
 
-module.exports = { Player };
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { Player };
+} else {
+  globalObject.CODZ = globalObject.CODZ || {};
+  globalObject.CODZ.Player = Player;
+}
+}(typeof window !== "undefined" ? window : globalThis));
